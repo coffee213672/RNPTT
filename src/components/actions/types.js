@@ -1,0 +1,8 @@
+export const ACCOUNT_CHANGE = 'account_change'
+export const PASSWORD_CHANGE = 'password_change'
+export const LOGIN_USER = 'login_user'
+export const LOGIN_SUCCESS = 'login_success'
+export const LOGIN_FAILD = 'login_faild'
+export const GUEST_LOGIN_SUCCESS = 'guest_login_success'
+export const GUEST_LOGIN_FAILD = 'guest_login_faild'
+export const LOGIN_REPEAT = 'login_repeat'
