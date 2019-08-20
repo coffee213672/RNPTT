@@ -14,6 +14,9 @@ export function AnsiParser(termbuf) {
   this.termbuf = termbuf
   this.state = AnsiParser.STATE_TEXT
   this.esc = ''
+  this.recFavDot = null
+  // this.firstPage = true
+  // this.getFirstData = false
 }
 
 AnsiParser.STATE_TEXT = 0
@@ -272,7 +275,7 @@ AnsiParser.prototype.feeds = function(data) {
         this.state = AnsiParser.STATE_TEXT
         break
       case AnsiParser.STATE_ESC:
-        if (ch == '[') this.state = AnsiParser.STATE_CSI
+        if (ch === '[') this.state = AnsiParser.STATE_CSI
         else {
           this.state = AnsiParser.STATE_C1
           --i
@@ -287,45 +290,76 @@ AnsiParser.prototype.feeds = function(data) {
     s = ''
   }
 
-  return term.lines
-
-  // term.lines.forEach(element => {
-  //   var arrayX = []
-  //   element.forEach(element2 => {
-  //     arrayX.push(element2.ch)
-  //   })
-  //   const sentence = b2u(arrayX.join('')).split(' ')
-  //   console.log(sentence)
-  // })
+  term.lines.forEach(element => {
+    var arrayX = []
+    element.forEach(element2 => {
+      arrayX.push(element2.ch)
+    })
+    const sentence = b2u(arrayX.join(''))
+    console.log(sentence)
+  })
   // console.log(term.lines)
+  return term.lines
 }
 
 AnsiParser.prototype.feed = function(data) {
   var term = this.termbuf
   if (!term) return
   console.log(Actions.currentScene)
-  // if (Actions.currentScene === 'login') console.log(b2u(data))
+  // console.log(
+  //   '====================================================================='
+  // )
+  // console.log(b2u(data))
+
+  // 我的最愛 進入已知板名
+  // 熱門看板 只列最愛
   switch (Actions.currentScene) {
     case 'login':
       this.loginParser(data)
       break
     case '_menu':
-      // console.log(
-      //   '====================================================================='
-      // )
-      // console.log(b2u(data))
       const lines = this.feeds(data)
       const topLocation = getLocation(lines[0])
       const bottomLocation = getLocation(lines[23])
-      if (topLocation === '【看板列表】' && bottomLocation === '選擇看板') {
-        console.log(`上:${topLocation} ,下:${bottomLocation}`)
-        DeviceEventEmitter.emit('boardList', lines.slice(3, 23))
+      if (
+        topLocation.indexOf('【看板列表】') !== -1 &&
+        bottomLocation.indexOf('進入已知板名') !== -1
+      ) {
+        DeviceEventEmitter.emit(Actions.currentScene, lines.slice(3, 23))
       }
-      //   const colorState = titleArray[0].getColor()
-      //   const colorStr = cx(`q${colorState.fg}`, `b${colorState.bg}`, {
-      //     [`qq${colorState.bg}`]: colorState.blink,
-      //   })
-      //   console.log(colorStr)
+      break
+    case '_HotBoard':
+      const lines_h = this.feeds(data)
+      const topLocation_h = getLocation(lines_h[0])
+      const bottomLocation_h = getLocation(lines_h[23])
+      if (
+        topLocation_h.indexOf('【看板列表】') !== -1 &&
+        bottomLocation_h.indexOf('只列最愛') !== -1
+      ) {
+        DeviceEventEmitter.emit(Actions.currentScene, lines_h.slice(3, 23))
+      }
+      break
+    case '_Mail':
+      const linesMails = this.feeds(data)
+      const topLocation_m = getLocation(linesMails[0])
+      if (topLocation_m.indexOf('電子郵件') !== -1) {
+        this.termbuf.conn.send('r')
+        this.termbuf.conn.send('\x1b[C')
+      }
+      break
+    case 'boardlist':
+      const lines_b = this.feeds(data)
+      const topLocation_b = getLocation(lines_b[1])
+      const bottomLocation_b = getLocation(lines_b[23])
+      const tag = lines_b[22].map(x => x.ch).join('')
+      const tag1 = lines_b[3].map(x => x.ch).join('')
+      if (
+        topLocation_b.indexOf('離開') !== -1 &&
+        bottomLocation_b.indexOf('文章選讀') !== -1
+      ) {
+        if (tag.indexOf('¡´') !== -1 || tag1.indexOf('¡´') !== -1)
+          DeviceEventEmitter.emit('articleList', lines_b.slice(3, 23).reverse())
+      }
       break
     default:
   }
@@ -338,8 +372,11 @@ AnsiParser.prototype.loginParser = function(data) {
       console.log('正確登入')
       // console.log(this.termbuf.conn)
       this.termbuf.conn.send('\x1b[C')
-      this.termbuf.conn.send('\x1b[A')
       this.termbuf.conn.send('\x1b[C')
+      this.termbuf.conn.send('14')
+      this.termbuf.conn.send('\r')
+      this.termbuf.conn.send('\x1b[C')
+      this.termbuf.conn.send('y')
       DeviceEventEmitter.emit('Login', LOGIN_SUCCESS)
       break
     case parserData.indexOf('密碼不對或無此帳號') !== -1:
@@ -361,14 +398,7 @@ AnsiParser.prototype.loginParser = function(data) {
 }
 
 const getLocation = lines => {
-  const titleArray = lines.filter((item, index) => {
-    return index < 14 && item.ch.length > 0
-  })
-
-  if (titleArray.length > 7) {
-    const charArray = titleArray.map(obj => obj.ch)
-    const location = b2u(charArray.join('')).trim()
-    return location
-  }
-  return false
+  const charArray = lines.map(obj => obj.ch)
+  const location = b2u(charArray.join('')).trim()
+  return location
 }

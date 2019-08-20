@@ -7,6 +7,7 @@ import {
   passwordChanged,
   loginUser,
 } from '../actions/LoginActions'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 class Login extends Component {
   state = {
@@ -41,7 +42,6 @@ class Login extends Component {
     const data = account + '\r' + password + '\r'
     this.props.connectSocket.sendtest(data)
     this.setState({ loading: true })
-    console.log(`帳號：${account} , 密碼：${password}`)
   }
 
   renderButton() {
@@ -88,6 +88,7 @@ class Login extends Component {
   }
 
   render() {
+    // console.log(this.props.connectSocket)
     return (
       <Card>
         <CardSection>
