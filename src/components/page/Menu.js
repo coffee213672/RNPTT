@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { PureComponent } from 'react'
 import {
   DeviceEventEmitter,
   View,
@@ -10,7 +10,7 @@ import { Actions } from 'react-native-router-flux'
 import ListItem from './ListItem'
 import { b2u } from '../../pttJs/string_util'
 
-class Menu extends Component {
+class Menu extends PureComponent {
   state = {
     loading: false,
     data: [],
@@ -28,7 +28,6 @@ class Menu extends Component {
       const numArray = termArray.slice(0, 8)
       let num = numArray.map(x => x.ch)
       num = parseInt(b2u(num.join('')).replace(/[^0-9]/gi, ''))
-      console.log(num)
       if (this.state.boardNumArray.indexOf(num) !== -1) return
       if (isNaN(num)) return
       this.setState({ boardNumArray: this.state.boardNumArray.concat(num) })
@@ -68,7 +67,7 @@ class Menu extends Component {
         return this.getBoardName(termchar[4], str.trim(), index)
       default:
         const strLocation = termchar.map(x => x)
-        return this.getColorToString(strLocation, str.trim(), part, index)
+        return this.getColorToString(strLocation, str.trim(), part)
     }
   }
 
@@ -102,7 +101,7 @@ class Menu extends Component {
     }
   }
 
-  getColorToString(termArray, str, part, index) {
+  getColorToString(termArray, str, part) {
     let colorArray = []
 
     for (let x of termArray) {
@@ -153,17 +152,15 @@ class Menu extends Component {
       return (
         <View style={styles.container}>
           <FlatList
-            initialNumToRender={25}
+            initialNumToRender={20}
             data={this.state.data}
-            extraData={this.state}
             keyExtractor={item => item.key.toString()}
             renderItem={this.renderRow.bind(this)}
             onEndReached={() => {
               let self = this
-              const xsend = ['\x1b[6~', '\x1b[6~']
-              for (const x of xsend) {
+              for (let i = 0; i < 3; i++) {
                 setTimeout(() => {
-                  self.props.connectSocket.sendtest(x)
+                  self.props.connectSocket.sendtest('\x1b[6~')
                 }, 0.2)
               }
             }}
@@ -180,7 +177,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     backgroundColor: '#000000',
-    marginTop: 2,
+    // marginTop: 2,
   },
 })
 

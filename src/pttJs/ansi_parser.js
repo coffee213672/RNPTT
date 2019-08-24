@@ -290,14 +290,14 @@ AnsiParser.prototype.feeds = function(data) {
     s = ''
   }
 
-  term.lines.forEach(element => {
-    var arrayX = []
-    element.forEach(element2 => {
-      arrayX.push(element2.ch)
-    })
-    const sentence = b2u(arrayX.join(''))
-    console.log(sentence)
-  })
+  // term.lines.forEach(element => {
+  //   var arrayX = []
+  //   element.forEach(element2 => {
+  //     arrayX.push(element2.ch)
+  //   })
+  //   const sentence = b2u(arrayX.join(''))
+  //   console.log(sentence)
+  // })
   // console.log(term.lines)
   return term.lines
 }
@@ -342,9 +342,18 @@ AnsiParser.prototype.feed = function(data) {
     case '_Mail':
       const linesMails = this.feeds(data)
       const topLocation_m = getLocation(linesMails[0])
+      const bottomLocation_m = getLocation(linesMails[23])
       if (topLocation_m.indexOf('電子郵件') !== -1) {
         this.termbuf.conn.send('r')
         this.termbuf.conn.send('\x1b[C')
+      }
+
+      if (
+        topLocation_m.indexOf('郵件選單') !== -1 &&
+        bottomLocation_m.indexOf('鴻雁往返') !== -1
+      ) {
+        const mailArray = linesMails.slice(3, 23).reverse()
+        DeviceEventEmitter.emit(Actions.currentScene, mailArray)
       }
       break
     case 'boardlist':
@@ -357,8 +366,10 @@ AnsiParser.prototype.feed = function(data) {
         topLocation_b.indexOf('離開') !== -1 &&
         bottomLocation_b.indexOf('文章選讀') !== -1
       ) {
-        if (tag.indexOf('¡´') !== -1 || tag1.indexOf('¡´') !== -1)
-          DeviceEventEmitter.emit('articleList', lines_b.slice(3, 23).reverse())
+        if (tag.indexOf('¡´') !== -1 || tag1.indexOf('¡´') !== -1) {
+          const sendArray = lines_b.slice(3, 23).reverse()
+          DeviceEventEmitter.emit('articleList', sendArray)
+        }
       }
       break
     default:

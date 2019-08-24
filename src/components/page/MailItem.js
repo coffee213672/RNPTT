@@ -1,39 +1,16 @@
 import React, { PureComponent } from 'react'
 import { Text, TouchableWithoutFeedback, View, StyleSheet } from 'react-native'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
 
-class ListItem extends PureComponent {
+class MailItem extends PureComponent {
   _onPress = () => {
-    this.props.onPressItem({
-      id: this.props.item.key,
-      boradName: this.props.item.row.boradName.text,
-    })
-  }
-
-  renderBoardName(data) {
-    return (
-      <Text
-        key={data.key}
-        style={[styles[data.styleStr[0]], styles[data.styleStr[1]]]}
-      >
-        {data.text}
-      </Text>
-    )
-  }
-
-  renderText(data) {
-    return (
-      <Text
-        key={data.key}
-        style={[styles[data.styleStr[0]], styles[data.styleStr[1]]]}
-      >
-        {data.text}
-      </Text>
-    )
+    // this.props.onPressItem({
+    //   id: this.props.item.key,
+    //   boradName: this.props.item.row.boradName.text,
+    // })
   }
 
   renderMask(colorArray) {
-    if (colorArray.indexOf('q7') !== -1) {
+    if (colorArray.indexOf('+') === -1) {
       return {
         borderColor: '#000000',
         opacity: 0.45,
@@ -46,34 +23,25 @@ class ListItem extends PureComponent {
   }
 
   render() {
+    const { sign, date, sender, title } = this.props.item.row
+    const key = this.props.item.key
     return (
       <TouchableWithoutFeedback onPress={this._onPress}>
-        <View style={this.renderMask(this.props.item.row.boradName.styleStr)}>
+        <View style={this.renderMask(sign)}>
           <View style={styles.ItemContainer}>
             <View style={styles.ContainerLeft}>
               <View style={styles.CLView}>
-                <Text style={styles.CLViewName}>
-                  {this.renderBoardName(this.props.item.row.boradName)}
-                </Text>
-                {this.props.item.row.boradName.tick ? (
-                  <MaterialCommunityIcons
-                    name="check"
-                    size={18}
-                    color="#3492eb"
-                  />
-                ) : null}
-                <Text style={styles.CLViewCate}>
-                  {this.renderText(this.props.item.row.category)}
+                <Text style={[styles.CLViewName, styles.q15, styles.b0]}>
+                  {title}
                 </Text>
               </View>
-              <Text style={styles.CLViewNarr}>
-                <Text>{this.props.item.row.narration}</Text>
-                {/* {this.renderText(this.props.item.row.narration)} */}
+              <Text style={[styles.CLViewNarr, styles.q15, styles.b0]}>
+                {key} {sender}
               </Text>
             </View>
             <View style={styles.ContainerRight}>
-              <Text style={styles.CRView}>
-                {this.renderText(this.props.item.row.popularity)}
+              <Text style={[styles.CRView, styles.q15, styles.b0]}>
+                {sign} {date}
               </Text>
             </View>
           </View>
@@ -219,4 +187,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
 })
-export default ListItem
+export default MailItem

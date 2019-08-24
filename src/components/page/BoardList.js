@@ -44,9 +44,18 @@ class BoardList extends PureComponent {
           .join(''),
         setArticleNo
       )
+      if (!articleNum) break
+
       const date = this.getb2u(termArray.slice(11, 16), ind1x, 'date').trim()
       const author = this.getb2u(termArray.slice(16, 30), ind1x, 'author')
-      const key = `${articleNum}_${date}_${author}`
+      const type = this.getb2u(termArray.slice(30, 32), ind1x, 'type')
+      let { category, title } = this.getb2u(
+        termArray.slice(33, 80),
+        ind1x,
+        'title'
+      )
+      if (type !== '') title = `${type} ${title}`
+      const key = `${articleNum}_${date}_${author}_${title}`
       if (this.state.keyArray.indexOf(key) !== -1) break
       this.setState({ keyArray: this.state.keyArray.concat(key) })
 
@@ -56,13 +65,6 @@ class BoardList extends PureComponent {
         ind1x,
         'popularity'
       )
-      const type = this.getb2u(termArray.slice(30, 32), ind1x, 'type')
-      let { category, title } = this.getb2u(
-        termArray.slice(33, 80),
-        ind1x,
-        'title'
-      )
-      if (type !== '') title = `${type} ${title}`
 
       this.setState({
         data: this.state.data.concat({
@@ -119,10 +121,11 @@ class BoardList extends PureComponent {
       now = parseInt(now)
       next = parseInt(next)
       if (now + 1 !== next || now - 1 !== next) {
-        return now < next ? next + 1 : now
+        return now < next ? next - 1 : now
       }
       return now
     }
+    if (now.indexOf('¡¹') === -1) return false
     return b2u(now)
   }
 
@@ -172,14 +175,15 @@ class BoardList extends PureComponent {
           keyExtractor={item => item.key}
           initialNumToRender={20}
           onEndReached={() => {
-            let self = this
-            for (let i = 0; i < 3; i++) {
-              setTimeout(() => {
-                self.props.connectSocket.sendtest('\x1b[5~')
-              }, 0.3)
-            }
+            this.props.connectSocket.sendtest('\x1b[5~')
+            // let self = this
+            // for (let i = 0; i < 3; i++) {
+            //   setTimeout(() => {
+            //     self.props.connectSocket.sendtest('\x1b[5~')
+            //   }, 0.3)
+            // }
           }}
-          onEndReachedThreshold={0.9}
+          onEndReachedThreshold={1}
         />
       </View>
     )

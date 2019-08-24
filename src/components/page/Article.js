@@ -9,19 +9,16 @@ import {
 import { Actions } from 'react-native-router-flux'
 import ListItem from './ListItem'
 import { b2u } from '../../pttJs/string_util'
-import { Spinner } from '../common/Spinner'
 
-class HotBoard extends PureComponent {
+class Article extends PureComponent {
   state = {
     loading: false,
     data: [],
     boardNumArray: [],
-    neverload: false,
-    count: 0,
   }
 
   componentDidMount() {
-    DeviceEventEmitter.addListener('_HotBoard', lines => {
+    DeviceEventEmitter.addListener('article', lines => {
       this.rowDetail(lines)
     })
   }
@@ -31,7 +28,7 @@ class HotBoard extends PureComponent {
       const numArray = termArray.slice(0, 8)
       let num = numArray.map(x => x.ch)
       num = parseInt(b2u(num.join('')).replace(/[^0-9]/gi, ''))
-      if (this.state.boardNumArray.indexOf(num) !== -1) continue
+      if (this.state.boardNumArray.indexOf(num) !== -1) return
       if (isNaN(num)) return
       this.setState({ boardNumArray: this.state.boardNumArray.concat(num) })
 
@@ -56,15 +53,7 @@ class HotBoard extends PureComponent {
         }),
       })
     }
-    if (this.state.count < 7) {
-      this.props.connectSocket.sendtest('\x1b[6~')
-      this.setState({ count: this.state.count + 1 })
-    }
-
-    if (this.state.count > 6) {
-      console.log(this.state.data)
-      this.setState({ loading: true })
-    }
+    this.setState({ loading: true })
   }
 
   getb2u(termchar, index, part) {
@@ -78,7 +67,7 @@ class HotBoard extends PureComponent {
         return this.getBoardName(termchar[4], str.trim(), index)
       default:
         const strLocation = termchar.map(x => x)
-        return this.getColorToString(strLocation, str.trim(), part, index)
+        return this.getColorToString(strLocation, str.trim(), part)
     }
   }
 
@@ -112,7 +101,7 @@ class HotBoard extends PureComponent {
     }
   }
 
-  getColorToString(termArray, str, part, index) {
+  getColorToString(termArray, str, part) {
     let colorArray = []
 
     for (let x of termArray) {
@@ -129,57 +118,15 @@ class HotBoard extends PureComponent {
     }
   }
 
-  _onPressItem({ id, boradName }) {
-    var self = this
-    const sendData = ['s', boradName, '\r', '\x1b[C', 'm', '\x1b[4~', '\x1b[4~']
-    for (let [i, v] of sendData.entries()) {
-      setTimeout(() => {
-        self.props.connectSocket.sendtest(v)
-        if (i === sendData.length - 1) {
-          Actions.childboard({ boardName: boradName })
-        }
-      }, 0.2)
-    }
-  }
-
-  renderRow = ({ item }) => {
-    return (
-      <ListItem
-        key={item.index}
-        item={item}
-        onPressItem={this._onPressItem.bind(this)}
-      />
-    )
-  }
-
   render() {
     if (!this.state.loading) {
       return (
         <View style={styles.container}>
-          <Spinner size="large" />
+          <Text>載入中</Text>
         </View>
       )
     } else {
-      return (
-        <View style={styles.container}>
-          <FlatList
-            initialNumToRender={20}
-            data={this.state.data}
-            keyExtractor={item => item.key.toString()}
-            renderItem={this.renderRow.bind(this)}
-            onEndReached={() => {
-              // this.props.connectSocket.sendtest('\x1b[6~')
-              // let self = this
-              // for (let i = 0; i < 1; i++) {
-              //   setTimeout(() => {
-              //     self.props.connectSocket.sendtest('\x1b[6~')
-              //   }, 0.3)
-              // }
-            }}
-            onEndReachedThreshold={1}
-          />
-        </View>
-      )
+      return <View style={styles.container}></View>
     }
   }
 }
@@ -189,8 +136,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     backgroundColor: '#000000',
-    // marginTop: 2,
   },
 })
 
-export default HotBoard
+export default Article
