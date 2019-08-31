@@ -367,9 +367,26 @@ AnsiParser.prototype.feed = function(data) {
         bottomLocation_b.indexOf('文章選讀') !== -1
       ) {
         if (tag.indexOf('¡´') !== -1 || tag1.indexOf('¡´') !== -1) {
-          const sendArray = lines_b.slice(3, 23).reverse()
-          DeviceEventEmitter.emit('articleList', sendArray)
+          // lines_b.forEach(element => {
+          //   var arrayX = []
+          //   element.forEach(element2 => {
+          //     arrayX.push(element2.ch)
+          //   })
+          //   const sentence = b2u(arrayX.join(''))
+          //   console.log(sentence)
+          // })
+          setTimeout(() => {
+            const sendArray = lines_b.slice(3, 23).reverse()
+            DeviceEventEmitter.emit('articleList', sendArray)
+          }, 0.2)
         }
+      }
+      break
+    case 'Article':
+      const lines_a = this.feeds(data)
+      const bottomLocation_a = getLocation(lines_a[23])
+      if (bottomLocation_a.indexOf('瀏覽') !== -1) {
+        DeviceEventEmitter.emit('article', lines_a)
       }
       break
     default:

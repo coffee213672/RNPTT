@@ -3,6 +3,7 @@ import { DeviceEventEmitter, View, StyleSheet, FlatList } from 'react-native'
 import { Actions } from 'react-native-router-flux'
 import BoaderListItem from './boaderListItem'
 import { b2u } from '../../pttJs/string_util'
+import { Spinner } from '../common/Spinner'
 
 class BoardList extends PureComponent {
   _isMounted = false
@@ -11,18 +12,32 @@ class BoardList extends PureComponent {
     loading: false,
     keyArray: [],
     data: [],
-    articleNo: 0,
+    articleNumArray: [],
+    recLargeNum: {},
   }
 
   componentDidMount() {
     this._isMounted = true
-
     setTimeout(() => {
       Actions.refresh({ title: this.props.boardName })
     }, 0.1)
 
     DeviceEventEmitter.addListener('articleList', lines => {
-      if (this._isMounted) this.rowArticleDetail(lines)
+      // const tag =
+      //   parseInt(
+      //     lines[18]
+      //       .slice(0, 7)
+      //       .map(x => x.ch)
+      //       .join('')
+      //   ) + 1
+      // if (this.state.articleNumArray.indexOf(tag) !== -1) {
+      //   this.props.connectSocket.sendtest('\x1b[5~')
+      // }
+
+      if (this._isMounted) {
+        this.setState({ loading: false })
+        this.rowArticleDetail(lines)
+      }
     })
   }
 
@@ -31,22 +46,27 @@ class BoardList extends PureComponent {
   }
 
   rowArticleDetail(lines) {
-    for (const [ind1x, termArray] of lines.entries()) {
-      const nextNum = ind1x < 19 ? ind1x + 1 : ind1x - 1
-      let setArticleNo = lines[nextNum]
+    let recNum = parseInt(
+      lines[18]
         .slice(0, 7)
         .map(x => x.ch)
         .join('')
-      let articleNum = this.getArticleNum(
-        termArray
-          .slice(0, 7)
-          .map(x => x.ch)
-          .join(''),
-        setArticleNo
-      )
-      if (!articleNum) break
-
-      const date = this.getb2u(termArray.slice(11, 16), ind1x, 'date').trim()
+    )
+    for (const [ind1x, termArray] of lines.entries()) {
+      let articleNum = termArray
+        .slice(0, 7)
+        .map(x => x.ch)
+        .join('')
+      if (articleNum.indexOf('¡´') !== -1) {
+        articleNum = articleNum.replace('¡´', '  ')
+      }
+      articleNum = b2u(articleNum)
+      if (!isNaN(articleNum)) {
+        articleNum = parseInt(articleNum)
+        if (articleNum.toString().length < recNum.toString().length) {
+          articleNum = recNum + (18 - ind1x)
+        }
+      }
       const author = this.getb2u(termArray.slice(16, 30), ind1x, 'author')
       const type = this.getb2u(termArray.slice(30, 32), ind1x, 'type')
       let { category, title } = this.getb2u(
@@ -55,9 +75,12 @@ class BoardList extends PureComponent {
         'title'
       )
       if (type !== '') title = `${type} ${title}`
-      const key = `${articleNum}_${date}_${author}_${title}`
-      if (this.state.keyArray.indexOf(key) !== -1) break
-      this.setState({ keyArray: this.state.keyArray.concat(key) })
+      const key = `${articleNum}_${author}_${title}`
+      if (this.state.keyArray.indexOf(key) !== -1) return
+      const date = this.getb2u(termArray.slice(11, 16), ind1x, 'date').trim()
+      this.setState({
+        keyArray: this.state.keyArray.concat(key),
+      })
 
       const sign = this.getb2u(termArray.slice(7, 9), ind1x, 'sign')
       const popularity = this.getb2u(
@@ -82,6 +105,7 @@ class BoardList extends PureComponent {
       })
     }
     this.setState({ loading: true })
+    console.log(this.state.data)
   }
 
   getb2u(termchar, index, part) {
@@ -113,15 +137,16 @@ class BoardList extends PureComponent {
     }
   }
 
-  getArticleNum(now, next) {
-    if (now.indexOf('¡´') !== -1) now = now.replace('¡´', '')
-    if (next.indexOf('¡´') !== -1) next = next.replace('¡´', '')
+  getArticleNum(now, next, index) {
+    if (now.indexOf('¡´') !== -1) now = now.replace('¡´', '  ')
+    if (next.indexOf('¡´') !== -1) next = next.replace('¡´', '  ')
 
     if (!isNaN(now)) {
       now = parseInt(now)
       next = parseInt(next)
       if (now + 1 !== next || now - 1 !== next) {
-        return now < next ? next - 1 : now
+        if (index < 19) return now < next ? next + 1 : now
+        else return now < next ? next - 1 : now
       }
       return now
     }
@@ -161,13 +186,45 @@ class BoardList extends PureComponent {
     return resultArray
   }
 
+  _onPressItem({ key }) {
+    const ka = key.split('_')
+    if (ka[0].indexOf('★') !== -1) {
+      const times = this.state.keyArray.indexOf(key)
+      let count = 0
+      while (count < times) {
+        // 傳送上指令
+        this.props.connectSocket.sendtest('\x1b[A~')
+        count++
+      }
+      // 傳送右指令
+      this.props.connectSocket.sendtest('\x1b[C~')
+    } else {
+      this.props.connectSocket.sendtest(ka[0])
+      this.props.connectSocket.sendtest('\r')
+      this.props.connectSocket.sendtest('\x1b[C~')
+    }
+    // router跳轉
+    setTimeout(() => {
+      Actions.Article({ board: this.props.boardName })
+    }, 0.1)
+  }
+  // ★
+
   renderRow({ item, index }) {
-    return <BoaderListItem key={`item_${index}`} item={item} index={index} />
+    return (
+      <BoaderListItem
+        key={`item_${index}`}
+        item={item}
+        index={index}
+        onPressItem={this._onPressItem.bind(this)}
+      />
+    )
   }
 
   render() {
     return (
       <View style={styles.container}>
+        {!this.state.loading ? <Spinner size="large" /> : null}
         <FlatList
           data={this.state.data}
           showsVerticalScrollIndicator={false}
@@ -176,12 +233,6 @@ class BoardList extends PureComponent {
           initialNumToRender={20}
           onEndReached={() => {
             this.props.connectSocket.sendtest('\x1b[5~')
-            // let self = this
-            // for (let i = 0; i < 3; i++) {
-            //   setTimeout(() => {
-            //     self.props.connectSocket.sendtest('\x1b[5~')
-            //   }, 0.3)
-            // }
           }}
           onEndReachedThreshold={1}
         />

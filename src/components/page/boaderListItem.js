@@ -3,7 +3,9 @@ import { Text, TouchableWithoutFeedback, View, StyleSheet } from 'react-native'
 
 class BoaderListItem extends PureComponent {
   _onPress = () => {
-    console.log(this.props.item.key)
+    this.props.onPressItem({
+      key: this.props.item.key,
+    })
   }
 
   renderText(data) {

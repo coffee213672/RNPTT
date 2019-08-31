@@ -1,11 +1,5 @@
 import React, { PureComponent } from 'react'
-import {
-  DeviceEventEmitter,
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-} from 'react-native'
+import { DeviceEventEmitter, View, FlatList, StyleSheet } from 'react-native'
 import { Actions } from 'react-native-router-flux'
 import ListItem from './ListItem'
 import { b2u } from '../../pttJs/string_util'
@@ -22,48 +16,57 @@ class HotBoard extends PureComponent {
 
   componentDidMount() {
     DeviceEventEmitter.addListener('_HotBoard', lines => {
-      this.rowDetail(lines)
+      this.doSomething(lines)
     })
   }
 
-  rowDetail(lines) {
-    for (const [ind1x, termArray] of lines.entries()) {
-      const numArray = termArray.slice(0, 8)
-      let num = numArray.map(x => x.ch)
-      num = parseInt(b2u(num.join('')).replace(/[^0-9]/gi, ''))
-      if (this.state.boardNumArray.indexOf(num) !== -1) continue
-      if (isNaN(num)) return
-      this.setState({ boardNumArray: this.state.boardNumArray.concat(num) })
+  doSomething(lines) {
+    Promise.all(lines.map(this.rowDetail.bind(this)))
+      .then(data => {
+        const reData = data.filter(x => x.row !== undefined)
 
-      const boradNameArray = termArray.slice(8, 23)
-      const categoryArray = termArray.slice(23, 28)
-      const narrationArray = termArray.slice(28, 64)
-      const popularityArray = termArray.slice(64, 67)
+        this.setState({
+          data: this.state.data.concat(reData),
+        })
 
-      const category = this.getb2u(categoryArray, ind1x, 'category')
-      const boradName = this.getb2u(boradNameArray, ind1x, 'boradName')
-      const narration = this.getb2u(narrationArray, ind1x, 'narration')
-      const popularity = this.getb2u(popularityArray, ind1x, 'popularity')
-      this.setState({
-        data: this.state.data.concat({
-          row: {
-            boradName: boradName,
-            category: category,
-            narration: narration,
-            popularity: popularity,
-          },
-          key: num,
-        }),
+        if (this.state.count < 7) {
+          this.props.connectSocket.sendtest('\x1b[6~')
+          this.setState({ count: this.state.count + 1 })
+        }
+
+        if (this.state.data.length > 120) {
+          this.setState({ loading: true })
+        }
       })
-    }
-    if (this.state.count < 7) {
-      this.props.connectSocket.sendtest('\x1b[6~')
-      this.setState({ count: this.state.count + 1 })
-    }
+      .catch(err => console.log(err))
+  }
 
-    if (this.state.count > 6) {
-      console.log(this.state.data)
-      this.setState({ loading: true })
+  rowDetail(termArray, ind1x) {
+    const numArray = termArray.slice(0, 8)
+    let num = numArray.map(x => x.ch)
+    num = parseInt(b2u(num.join('')).replace(/[^0-9]/gi, ''))
+    if (this.state.boardNumArray.indexOf(num) !== -1) return {}
+    if (isNaN(num)) return {}
+    this.setState({ boardNumArray: this.state.boardNumArray.concat(num) })
+
+    const boradNameArray = termArray.slice(8, 23)
+    const categoryArray = termArray.slice(23, 28)
+    const narrationArray = termArray.slice(28, 64)
+    const popularityArray = termArray.slice(64, 67)
+
+    const category = this.getb2u(categoryArray, ind1x, 'category')
+    const boradName = this.getb2u(boradNameArray, ind1x, 'boradName')
+    const narration = this.getb2u(narrationArray, ind1x, 'narration')
+    const popularity = this.getb2u(popularityArray, ind1x, 'popularity')
+
+    return {
+      row: {
+        boradName: boradName,
+        category: category,
+        narration: narration,
+        popularity: popularity,
+      },
+      key: num,
     }
   }
 
@@ -163,20 +166,10 @@ class HotBoard extends PureComponent {
       return (
         <View style={styles.container}>
           <FlatList
-            initialNumToRender={20}
+            initialNumToRender={90}
             data={this.state.data}
             keyExtractor={item => item.key.toString()}
             renderItem={this.renderRow.bind(this)}
-            onEndReached={() => {
-              // this.props.connectSocket.sendtest('\x1b[6~')
-              // let self = this
-              // for (let i = 0; i < 1; i++) {
-              //   setTimeout(() => {
-              //     self.props.connectSocket.sendtest('\x1b[6~')
-              //   }, 0.3)
-              // }
-            }}
-            onEndReachedThreshold={1}
           />
         </View>
       )
@@ -189,7 +182,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     backgroundColor: '#000000',
-    // marginTop: 2,
   },
 })
 

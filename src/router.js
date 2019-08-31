@@ -7,18 +7,25 @@ import MyFavorite from './components/page/MyFavorite'
 import Mail from './components/page/Mail'
 import HotBoard from './components/page/HotBoard'
 import BoardList from './components/page/BoardList'
-import detailNavVar from './detailNavBar'
+import Article from './components/page/Article'
+import detailNavBar from './detailNavBar'
 
 class RouterComponent extends Component {
   onBackPress() {
-    if (Actions.currentScene === 'boardlist') {
-      this.props.connectSocket.sendtest('\x1b[4~')
-      this.props.connectSocket.sendtest('\x1b[D')
-      // this.props.connectSocket.sendtest('\x1b[D')
-      Actions.pop()
-      return true
+    switch (Actions.currentScene) {
+      case 'boardlist':
+        this.props.connectSocket.sendtest('\x1b[4~')
+        this.props.connectSocket.sendtest('\x1b[D')
+        // this.props.connectSocket.sendtest('\x1b[D')
+        Actions.pop()
+        return true
+      case 'Article':
+        this.props.connectSocket.sendtest('\x1b[D')
+        Actions.pop()
+        return true
+      default:
+        return false
     }
-    return false
   }
 
   render() {
@@ -172,6 +179,20 @@ class RouterComponent extends Component {
               }}
               title={this.props.boardName}
               titleStyle={{ color: '#ffffff' }}
+            />
+            <Scene
+              key="Article"
+              component={Article}
+              connectSocket={this.props.connectSocket}
+              // hideNavBar={true}
+              navBar={detailNavBar}
+              // leftTitle="back"
+              // onLeft={() => {
+              //   this.props.connectSocket.sendtest('\x1b[D')
+              //   Actions.pop()
+              // }}
+              // title={this.props.boardName}
+              // titleStyle={{ color: '#ffffff' }}
             />
           </Scene>
         </Scene>

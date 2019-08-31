@@ -2,9 +2,11 @@ import { Event } from './event'
 import { DeviceEventEmitter } from 'react-native'
 
 export function Websocket() {
-  let option = {}
-  option.headers = {}
-  option.headers.origin = 'https://term.ptt.cc'
+  let option = {
+    headers: {
+      origin: 'https://term.ptt.cc',
+    },
+  }
   this._conn = new WebSocket('wss://ws.ptt.cc/bbs', '13', option)
   this._conn.binaryType = 'arraybuffer'
 
