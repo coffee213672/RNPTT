@@ -362,22 +362,28 @@ AnsiParser.prototype.feed = function(data) {
       const bottomLocation_b = getLocation(lines_b[23])
       const tag = lines_b[22].map(x => x.ch).join('')
       const tag1 = lines_b[3].map(x => x.ch).join('')
+      const tag2 = lines_b[13].map(x => x.ch).join('')
       if (
         topLocation_b.indexOf('離開') !== -1 &&
         bottomLocation_b.indexOf('文章選讀') !== -1
       ) {
         if (tag.indexOf('¡´') !== -1 || tag1.indexOf('¡´') !== -1) {
-          // lines_b.forEach(element => {
-          //   var arrayX = []
-          //   element.forEach(element2 => {
-          //     arrayX.push(element2.ch)
-          //   })
-          //   const sentence = b2u(arrayX.join(''))
-          //   console.log(sentence)
-          // })
+          lines_b.forEach(element => {
+            var arrayX = []
+            element.forEach(element2 => {
+              arrayX.push(element2.ch)
+            })
+            const sentence = b2u(arrayX.join(''))
+            console.log(sentence)
+          })
           setTimeout(() => {
             const sendArray = lines_b.slice(3, 23).reverse()
             DeviceEventEmitter.emit('articleList', sendArray)
+          }, 0.2)
+        } else if (tag2.indexOf('¡´') !== -1) {
+          setTimeout(() => {
+            const sendArray = lines_b.slice(3, 23).reverse()
+            DeviceEventEmitter.emit('readArticle', sendArray)
           }, 0.2)
         }
       }

@@ -14,6 +14,7 @@ class BoardList extends PureComponent {
     data: [],
     articleNumArray: [],
     recLargeNum: {},
+    reading: false,
   }
 
   componentDidMount() {
@@ -23,20 +24,30 @@ class BoardList extends PureComponent {
     }, 0.1)
 
     DeviceEventEmitter.addListener('articleList', lines => {
-      // const tag =
-      //   parseInt(
-      //     lines[18]
-      //       .slice(0, 7)
-      //       .map(x => x.ch)
-      //       .join('')
-      //   ) + 1
-      // if (this.state.articleNumArray.indexOf(tag) !== -1) {
-      //   this.props.connectSocket.sendtest('\x1b[5~')
-      // }
-
       if (this._isMounted) {
         this.setState({ loading: false })
         this.rowArticleDetail(lines)
+      }
+    })
+
+    DeviceEventEmitter.addListener('readArticle', lines => {
+      if (this._isMounted && this.state.reading) {
+        let recNum = parseInt(
+          lines[8]
+            .slice(0, 7)
+            .map(x => x.ch)
+            .join('')
+        ) - 1
+
+        let lastNum = this.state.data[this.state.data.length - 1].row.articleNum
+        if(recNum > lastNum) {
+          this.props.connectSocket.sendtest(`${lastNum}`)
+          this.props.connectSocket.sendtest('\r')
+          this.props.connectSocket.sendtest('\x1b[C~')
+        } else {
+          const cutlines = lines.slice(10, 20)
+          this.rowArticleDetail(cutlines)
+        }
       }
     })
   }
@@ -46,8 +57,9 @@ class BoardList extends PureComponent {
   }
 
   rowArticleDetail(lines) {
+    const loc = lines.length - 2
     let recNum = parseInt(
-      lines[18]
+      lines[loc]
         .slice(0, 7)
         .map(x => x.ch)
         .join('')
@@ -64,7 +76,7 @@ class BoardList extends PureComponent {
       if (!isNaN(articleNum)) {
         articleNum = parseInt(articleNum)
         if (articleNum.toString().length < recNum.toString().length) {
-          articleNum = recNum + (18 - ind1x)
+          articleNum = recNum + (loc - ind1x)
         }
       }
       const author = this.getb2u(termArray.slice(16, 30), ind1x, 'author')
@@ -189,6 +201,7 @@ class BoardList extends PureComponent {
   _onPressItem({ key }) {
     const ka = key.split('_')
     if (ka[0].indexOf('★') !== -1) {
+      this.props.connectSocket.sendtest('\x1b[4~')
       const times = this.state.keyArray.indexOf(key)
       let count = 0
       while (count < times) {
@@ -202,6 +215,7 @@ class BoardList extends PureComponent {
       this.props.connectSocket.sendtest(ka[0])
       this.props.connectSocket.sendtest('\r')
       this.props.connectSocket.sendtest('\x1b[C~')
+      if (this.state.data.length > 20 && this.state.data[19].row.articleNum > ka[0] ) this.setState({ reading: true })
     }
     // router跳轉
     setTimeout(() => {
