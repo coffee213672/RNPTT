@@ -32,21 +32,23 @@ class BoardList extends PureComponent {
 
     DeviceEventEmitter.addListener('readArticle', lines => {
       if (this._isMounted && this.state.reading) {
-        let recNum = parseInt(
-          lines[8]
-            .slice(0, 7)
-            .map(x => x.ch)
-            .join('')
-        ) - 1
+        let recNum =
+          parseInt(
+            lines[8]
+              .slice(0, 7)
+              .map(x => x.ch)
+              .join('')
+          ) - 1
 
         let lastNum = this.state.data[this.state.data.length - 1].row.articleNum
-        if(recNum > lastNum) {
+        if (recNum > lastNum) {
           this.props.connectSocket.sendtest(`${lastNum}`)
           this.props.connectSocket.sendtest('\r')
           this.props.connectSocket.sendtest('\x1b[C~')
         } else {
           const cutlines = lines.slice(10, 20)
           this.rowArticleDetail(cutlines)
+          this.setState({ reading: false })
         }
       }
     })
@@ -215,7 +217,11 @@ class BoardList extends PureComponent {
       this.props.connectSocket.sendtest(ka[0])
       this.props.connectSocket.sendtest('\r')
       this.props.connectSocket.sendtest('\x1b[C~')
-      if (this.state.data.length > 20 && this.state.data[19].row.articleNum > ka[0] ) this.setState({ reading: true })
+      if (
+        this.state.data.length > 20 &&
+        this.state.data[19].row.articleNum > ka[0]
+      )
+        this.setState({ reading: true })
     }
     // router跳轉
     setTimeout(() => {
