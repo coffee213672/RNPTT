@@ -69,7 +69,7 @@ class BoaderListItem extends PureComponent {
                   >
                     <Text style={styles.CLViewDownNum}>{item.articleNum}</Text>
                     <Text style={styles.CLViewDownAuthor}>
-                      {item.author.trim()}
+                      {item.author}
                     </Text>
                   </View>
                   <View

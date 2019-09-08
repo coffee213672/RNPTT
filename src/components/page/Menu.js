@@ -120,7 +120,7 @@ class Menu extends PureComponent {
 
   _onPressItem({ id, boradName }) {
     var self = this
-    const sendData = ['s', boradName, '\r', '\x1b[C', 'm', '\x1b[4~']
+    const sendData = ['s', boradName, '\r', '\x1b[C', 'm', '\x1b[4~', '\x1b[4~']
     for (let [i, v] of sendData.entries()) {
       setTimeout(() => {
         self.props.connectSocket.sendtest(v)

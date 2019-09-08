@@ -290,14 +290,14 @@ AnsiParser.prototype.feeds = function(data) {
     s = ''
   }
 
-  // term.lines.forEach(element => {
-  //   var arrayX = []
-  //   element.forEach(element2 => {
-  //     arrayX.push(element2.ch)
-  //   })
-  //   const sentence = b2u(arrayX.join(''))
-  //   console.log(sentence)
-  // })
+  term.lines.forEach(element => {
+    var arrayX = []
+    element.forEach(element2 => {
+      arrayX.push(element2.ch)
+    })
+    const sentence = b2u(arrayX.join(''))
+    console.log(sentence)
+  })
   // console.log(term.lines)
   return term.lines
 }
@@ -368,14 +368,6 @@ AnsiParser.prototype.feed = function(data) {
         bottomLocation_b.indexOf('文章選讀') !== -1
       ) {
         if (tag.indexOf('¡´') !== -1 || tag1.indexOf('¡´') !== -1) {
-          lines_b.forEach(element => {
-            var arrayX = []
-            element.forEach(element2 => {
-              arrayX.push(element2.ch)
-            })
-            const sentence = b2u(arrayX.join(''))
-            console.log(sentence)
-          })
           setTimeout(() => {
             const sendArray = lines_b.slice(3, 23).reverse()
             DeviceEventEmitter.emit('articleList', sendArray)
@@ -402,6 +394,9 @@ AnsiParser.prototype.feed = function(data) {
 AnsiParser.prototype.loginParser = function(data) {
   const parserData = b2u(data)
   switch (true) {
+    case parserData.indexOf('請勿頻繁登入以免造成系統過度負荷') !== -1:
+        this.termbuf.conn.send('\x1b[C')
+      break
     case parserData.indexOf('按任意鍵繼續') !== -1:
       console.log('正確登入')
       // console.log(this.termbuf.conn)

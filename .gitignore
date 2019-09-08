@@ -4,6 +4,7 @@ npm-debug.*
 *.jks
 *.p12
 *.key
+*.json
 *.mobileprovision
 *.orig.*
 web-build/
