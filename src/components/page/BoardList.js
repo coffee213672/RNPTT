@@ -25,7 +25,7 @@ class BoardList extends PureComponent {
 
     DeviceEventEmitter.addListener('articleList', lines => {
       if (this._isMounted) {
-        this.setState({ loading: false })
+        // this.setState({ loading: false })
         this.rowArticleDetail(lines)
       }
     })
@@ -59,6 +59,7 @@ class BoardList extends PureComponent {
   }
 
   rowArticleDetail(lines) {
+    let data = []
     const loc = lines.length - 2
     let recNum = parseInt(
       lines[loc]
@@ -103,23 +104,22 @@ class BoardList extends PureComponent {
         'popularity'
       )
 
-      this.setState({
-        data: this.state.data.concat({
-          row: {
-            sign: sign,
-            popularity: popularity,
-            articleNum: articleNum,
-            date: date,
-            author: author,
-            category: category,
-            title: title,
-          },
-          key: key,
-        }),
+      data.push({
+        row: {
+          sign: sign,
+          popularity: popularity,
+          articleNum: articleNum,
+          date: date,
+          author: author,
+          category: category,
+          title: title,
+        },
+        key: key,
       })
     }
-    this.setState({ loading: true })
-    console.log(this.state.data)
+    this.setState({ data: this.state.data.concat(data) })
+    if (!this.state.loading) this.setState({ loading: true })
+    // console.log(this.state.data)
   }
 
   getb2u(termchar, index, part) {
@@ -225,7 +225,7 @@ class BoardList extends PureComponent {
     }
     // router跳轉
     setTimeout(() => {
-      Actions.Article({ board: this.props.boardName })
+      Actions.ArticlePage({ board: this.props.boardName })
     }, 0.1)
   }
   // ★

@@ -105,59 +105,6 @@ AnsiParser.prototype.feeds = function(data) {
             case 'd':
               term.gotoPos(term.cur_x, params[0] > 0 ? params[0] - 1 : 0)
               break
-            /*
-        case 'h':
-          if (firstChar == '?') {
-            var mainobj = term.view.conn.listener;
-            switch(params[0]) {
-            case 1:
-              term.view.cursorAppMode = true;
-              break;
-            case 1048:
-            case 1049:
-              term.cur_x_sav = term.cur_x;
-              term.cur_y_sav = term.cur_y;
-              if (params[0] != 1049) break; // 1049 fall through
-            case 47:
-            case 1047:
-              mainobj.selAll(true); // skipRedraw
-              term.altScreen=mainobj.ansiCopy(true); // external buffer
-              term.altScreen+=term.ansiCmp(TermChar.newChar, term.attr);
-              term.clear(2);
-              term.attr.resetAttr();
-              break;
-            default:
-            }
-          }
-          break;
-        case 'l':
-          if (firstChar == '?') {
-            switch (params[0]) {
-            case 1:
-              term.view.cursorAppMode = false;
-              break;
-            case 47:
-            case 1047:
-            case 1049:
-              term.clear(2);
-              term.attr.resetAttr();
-              if (term.altScreen) {
-                this.state = AnsiParser.STATE_TEXT;
-                this.esc = '';
-                this.feed(term.altScreen.replace(/(\r\n)+$/g, '\r\n'));
-              }
-              term.altScreen='';
-              if (params[0] != 1049) break; // 1049 fall through
-            case 1048:
-              if (term.cur_x_sav<0 || term.cur_y_sav<0) break;
-              term.cur_x = term.cur_x_sav;
-              term.cur_y = term.cur_y_sav;
-              break;
-            default:
-            }
-          }
-          break;
-        */
             case 'J':
               term.clear(params ? params[0] : 0)
               break
@@ -290,14 +237,14 @@ AnsiParser.prototype.feeds = function(data) {
     s = ''
   }
 
-  term.lines.forEach(element => {
-    var arrayX = []
-    element.forEach(element2 => {
-      arrayX.push(element2.ch)
-    })
-    const sentence = b2u(arrayX.join(''))
-    console.log(sentence)
-  })
+  // term.lines.forEach(element => {
+  //   var arrayX = []
+  //   element.forEach(element2 => {
+  //     arrayX.push(element2.ch)
+  //   })
+  //   const sentence = b2u(arrayX.join(''))
+  //   console.log(sentence)
+  // })
   // console.log(term.lines)
   return term.lines
 }
@@ -305,7 +252,7 @@ AnsiParser.prototype.feeds = function(data) {
 AnsiParser.prototype.feed = function(data) {
   var term = this.termbuf
   if (!term) return
-  console.log(Actions.currentScene)
+  // console.log(Actions.currentScene)
   // console.log(
   //   '====================================================================='
   // )
@@ -326,6 +273,14 @@ AnsiParser.prototype.feed = function(data) {
         bottomLocation.indexOf('進入已知板名') !== -1
       ) {
         DeviceEventEmitter.emit(Actions.currentScene, lines.slice(3, 23))
+      } else if (
+        topLocation.indexOf('【分類看板】') !== -1 &&
+        bottomLocation.trim() === ''
+      ) {
+        this.termbuf.conn.send('14')
+        this.termbuf.conn.send('\r')
+        this.termbuf.conn.send('\x1b[C')
+        this.termbuf.conn.send('y')
       }
       break
     case '_HotBoard':
@@ -395,7 +350,7 @@ AnsiParser.prototype.loginParser = function(data) {
   const parserData = b2u(data)
   switch (true) {
     case parserData.indexOf('請勿頻繁登入以免造成系統過度負荷') !== -1:
-        this.termbuf.conn.send('\x1b[C')
+      this.termbuf.conn.send('\x1b[C')
       break
     case parserData.indexOf('按任意鍵繼續') !== -1:
       console.log('正確登入')

@@ -70,6 +70,6 @@ ConnectSocket.prototype.onData = function(data) {
 }
 
 ConnectSocket.prototype.sendtest = function(data) {
-  console.log('wsConn test send')
+  // console.log('wsConn test send')
   this.conn._sendRaw(data)
 }

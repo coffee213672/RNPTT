@@ -28,7 +28,7 @@ class Mail extends PureComponent {
       const numArray = termArray.slice(0, 6)
       let num = numArray.map(x => x.ch)
       num = parseInt(b2u(num.join('')).replace(/[^0-9]/gi, ''))
-      if (this.state.boardNumArray.indexOf(num) !== -1) continue
+      if (this.state.boardNumArray.indexOf(num) !== -1) return
       if (isNaN(num)) return
       this.setState({ boardNumArray: this.state.boardNumArray.concat(num) })
 
@@ -54,7 +54,7 @@ class Mail extends PureComponent {
       })
     }
     this.setState({ loading: true })
-    console.log(this.state.data)
+    // console.log(this.state.data)
   }
 
   getb2u(termchar) {
@@ -63,17 +63,14 @@ class Mail extends PureComponent {
     return str
   }
 
-  _onPressItem({ id, boradName }) {
-    // var self = this
-    // const sendData = [id.toString(), '\r', '\x1b[C', 'm', '\x1b[4~', '\x1b[4~']
-    // for (let [i, v] of sendData.entries()) {
-    //   setTimeout(() => {
-    //     self.props.connectSocket.sendtest(v)
-    //     // if (i === sendData.length - 1) {
-    //     //   Actions.childboard({ boardName: boradName })
-    //     // }
-    //   }, 0.2)
-    // }
+  _onPressItem(key) {
+    this.props.connectSocket.sendtest(`${key}`)
+    this.props.connectSocket.sendtest('\r')
+    this.props.connectSocket.sendtest('\x1b[C~')
+    // router跳轉
+    // setTimeout(() => {
+    Actions.ArticlePage()
+    // }, 0.1)
   }
 
   renderRow = ({ item }) => {
@@ -81,7 +78,7 @@ class Mail extends PureComponent {
       <MailItem
         key={item.index}
         item={item}
-        // onPressItem={this._onPressItem.bind(this)}
+        onPressItem={this._onPressItem.bind(this)}
       />
     )
   }

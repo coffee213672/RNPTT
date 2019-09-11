@@ -3,10 +3,7 @@ import { Text, TouchableWithoutFeedback, View, StyleSheet } from 'react-native'
 
 class MailItem extends PureComponent {
   _onPress = () => {
-    // this.props.onPressItem({
-    //   id: this.props.item.key,
-    //   boradName: this.props.item.row.boradName.text,
-    // })
+    this.props.onPressItem(this.props.item.key)
   }
 
   renderMask(colorArray) {

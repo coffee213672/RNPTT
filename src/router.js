@@ -3,7 +3,7 @@ import { Scene, Router, Actions, ActionConst } from 'react-native-router-flux'
 import tabIcon from './tabIcon'
 import Login from './components/page/Login'
 import Menu from './components/page/Menu'
-import MyFavorite from './components/page/MyFavorite'
+// import MyFavorite from './components/page/MyFavorite'
 import Mail from './components/page/Mail'
 import HotBoard from './components/page/HotBoard'
 import BoardList from './components/page/BoardList'
@@ -58,7 +58,7 @@ class RouterComponent extends Component {
               key="menu"
               connectSocket={this.props.connectSocket}
               onExit={() => {
-                console.log(`menu exit ::${Actions.currentScene}`)
+                // console.log(`menu exit ::${Actions.currentScene}`)
                 const current = Actions.currentScene
                 if (current === '_Mail') {
                   this.props.connectSocket.sendtest('\x1b[D')
@@ -66,7 +66,7 @@ class RouterComponent extends Component {
                 }
               }}
               onEnter={() => {
-                console.log(`recPage: ${this.recPage}`)
+                // console.log(`recPage: ${this.recPage}`)
                 if (this.recPage === '') {
                   this.recPage = Actions.currentScene
                 } else {
@@ -97,7 +97,7 @@ class RouterComponent extends Component {
               key="HotBoard"
               connectSocket={this.props.connectSocket}
               onExit={() => {
-                console.log(`HotBoard exit ::${Actions.currentScene}`)
+                // console.log(`HotBoard exit ::${Actions.currentScene}`)
                 const current = Actions.currentScene
                 if (current === '_Mail') {
                   this.props.connectSocket.sendtest('\x1b[D')
@@ -105,7 +105,7 @@ class RouterComponent extends Component {
                 }
               }}
               onEnter={() => {
-                console.log(`recPage: ${this.recPage}`)
+                // console.log(`recPage: ${this.recPage}`)
                 if (this.recPage === '_menu') {
                   this.props.connectSocket.sendtest('\x1b[1~')
                   this.props.connectSocket.sendtest('y')
@@ -132,19 +132,19 @@ class RouterComponent extends Component {
               key="Mail"
               connectSocket={this.props.connectSocket}
               onExit={() => {
-                console.log(`Mail exit ::${Actions.currentScene}`)
+                // console.log(`Mail exit ::${Actions.currentScene}`)
                 const current = Actions.currentScene
-                console.log(current === '_menu')
-                console.log(current === '_HotBoard')
+                // console.log(current === '_menu')
+                // console.log(current === '_HotBoard')
                 if (current === '_menu' || current === '_HotBoard') {
-                  console.log(`Come in Mail exit ::${Actions.currentScene}`)
+                  // console.log(`Come in Mail exit ::${Actions.currentScene}`)
                   this.props.connectSocket.sendtest('\x1b[D')
                   this.props.connectSocket.sendtest('\x1b[D')
                   this.props.connectSocket.sendtest('\x1b[D')
                 }
               }}
               onEnter={() => {
-                console.log(`recPage: ${this.recPage}`)
+                // console.log(`recPage: ${this.recPage}`)
                 if (this.recPage === '_menu' || this.recPage === '_HotBoard') {
                   this.props.connectSocket.sendtest('m')
                   this.props.connectSocket.sendtest('\x1b[C')
@@ -158,14 +158,14 @@ class RouterComponent extends Component {
               icon={tabIcon}
               iconName={'email'}
             />
-            <Scene
+            {/* <Scene
               key="MyFavorite"
               component={MyFavorite}
               title="設定"
               titleStyle={{ color: '#ffffff' }}
               icon={tabIcon}
               iconName={'settings'}
-            />
+            /> */}
           </Scene>
           <Scene key="childboard">
             <Scene
@@ -180,19 +180,13 @@ class RouterComponent extends Component {
               title={this.props.boardName}
               titleStyle={{ color: '#ffffff' }}
             />
+          </Scene>
+          <Scene key="ArticlePage">
             <Scene
               key="Article"
               component={Article}
               connectSocket={this.props.connectSocket}
-              // hideNavBar={true}
               navBar={detailNavBar}
-              // leftTitle="back"
-              // onLeft={() => {
-              //   this.props.connectSocket.sendtest('\x1b[D')
-              //   Actions.pop()
-              // }}
-              // title={this.props.boardName}
-              // titleStyle={{ color: '#ffffff' }}
             />
           </Scene>
         </Scene>

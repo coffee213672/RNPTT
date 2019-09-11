@@ -1,6 +1,5 @@
 // Terminal View
 
-import { TermKeyboard } from './term_keyboard'
 import { termInvColors } from './term_buf'
 import { renderRowHtml, renderScreen } from './term_ui'
 import { i18n } from './i18n'

@@ -11,7 +11,7 @@ export function Websocket() {
   this._conn.binaryType = 'arraybuffer'
 
   this._conn.onopen = () => {
-    console.log('open')
+    // console.log('open')
     DeviceEventEmitter.emit('open')
   }
 
